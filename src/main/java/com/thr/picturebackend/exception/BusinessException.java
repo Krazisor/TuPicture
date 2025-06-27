@@ -1,5 +1,6 @@
 package com.thr.picturebackend.exception;
 
+import com.thr.picturebackend.model.enums.UserRoleEnum;
 import lombok.Getter;
 
 @Getter
