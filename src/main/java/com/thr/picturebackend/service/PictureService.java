@@ -2,10 +2,7 @@ package com.thr.picturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thr.picturebackend.model.dto.picture.PictureQueryRequest;
-import com.thr.picturebackend.model.dto.picture.PictureReviewRequest;
-import com.thr.picturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.thr.picturebackend.model.dto.picture.PictureUploadRequest;
+import com.thr.picturebackend.model.dto.picture.*;
 import com.thr.picturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.thr.picturebackend.model.entity.User;
@@ -54,4 +51,10 @@ public interface PictureService extends IService<Picture> {
     Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest, User loginUser);
 
     void clearPictureFile(Picture picture);
+
+    void checkPictureAuth(User loginUser, Picture picture);
+
+    void deletePicture(long pictureId, User loginUser);
+
+    void editPicture (PictureEditRequest pictureEditRequest, User loginUser);
 }
