@@ -2,6 +2,9 @@ server:
   port: 8123
   servlet:
     context-path: /api
+    session:
+      cookie:
+        max-age: 259200
 spring:
   application:
     name: tu-picture-backend
@@ -13,7 +16,10 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-#   单元测试专用
+  session:
+    store-type: redis
+    timeout: 259200
+  #   单元测试专用
 #  profiles:
 #    active: local
   # Redis 配置
