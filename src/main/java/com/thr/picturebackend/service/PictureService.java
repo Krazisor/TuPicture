@@ -10,6 +10,7 @@ import com.thr.picturebackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author 屠皓然
@@ -57,4 +58,6 @@ public interface PictureService extends IService<Picture> {
     void deletePicture(long pictureId, User loginUser);
 
     void editPicture (PictureEditRequest pictureEditRequest, User loginUser);
+
+    List<PictureVO> searchPictureByColor (Long spaceId, String picColor, User loginUser);
 }

@@ -26,23 +26,24 @@ import com.thr.picturebackend.service.PictureService;
 import com.thr.picturebackend.mapper.PictureMapper;
 import com.thr.picturebackend.service.SpaceService;
 import com.thr.picturebackend.service.UserService;
+import com.thr.picturebackend.utils.ColorSimilarUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -131,6 +132,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         picture.setPicHeight(uploadPictureResult.getPicHeight());
         picture.setPicScale(uploadPictureResult.getPicScale());
         picture.setPicFormat(uploadPictureResult.getPicFormat());
+        picture.setPicColor(uploadPictureResult.getPicColor());
         picture.setUserId(loginUser.getId());
         picture.setSpaceId(spaceId);
 
@@ -229,6 +231,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         String searchText = pictureQueryRequest.getSearchText();
         Long userId = pictureQueryRequest.getUserId();
         Long spaceId = pictureQueryRequest.getSpaceId();
+        Date startEditTime = pictureQueryRequest.getStartEditTime();
+        Date endEditTime = pictureQueryRequest.getEndEditTime();
         String sortField = pictureQueryRequest.getSortField();
         String sortOrder = pictureQueryRequest.getSortOrder();
         Integer reviewStatus = pictureQueryRequest.getReviewStatus();
@@ -259,6 +263,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
         queryWrapper.like(StrUtil.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
+        queryWrapper.ge(ObjUtil.isNotEmpty(startEditTime), "editTime", startEditTime);
+        queryWrapper.lt(ObjUtil.isNotEmpty(endEditTime), "editTime", endEditTime);
         // JSON 数组查询
         if (CollUtil.isNotEmpty(tags)) {
             for (String tag : tags) {
@@ -398,7 +404,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         if (spaceId == null) {
             ThrowUtils.throwIf(!picture.getUserId().equals(loginUserId) && userService.isAdmin(loginUser), ErrorCode.NO_AUTH_ERROR);
         } else {
-            ThrowUtils.throwIf(picture.getUserId().equals(loginUserId), ErrorCode.NO_AUTH_ERROR);
+            ThrowUtils.throwIf(!picture.getUserId().equals(loginUserId), ErrorCode.NO_AUTH_ERROR);
         }
     }
 
@@ -453,6 +459,38 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture>
         // 操作数据库
         boolean result = this.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+    }
+
+    public List<PictureVO> searchPictureByColor (Long spaceId, String picColor, User loginUser) {
+        ThrowUtils.throwIf(picColor == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
+        ThrowUtils.throwIf(spaceId == null, ErrorCode.NO_AUTH_ERROR);
+        Long spaceUserId = spaceService.getById(spaceId).getUserId();
+        ThrowUtils.throwIf(!loginUser.getId().equals(spaceUserId), ErrorCode.NO_AUTH_ERROR, "空间不属于自己");
+        List<Picture> pictureList = this.lambdaQuery()
+                .eq(Picture::getSpaceId, spaceId)
+                .isNotNull(Picture::getPicColor)
+                .list();
+        // 如果没有图片，返回空列表
+        if (CollUtil.isNotEmpty(pictureList)) {
+            return new ArrayList<>();
+        }
+        // 将颜色字符串转换为主色调
+        Color targetColor = Color.decode(picColor);
+        // 计算相似度并排序
+        return pictureList.stream()
+                .sorted(Comparator.comparingDouble(picture -> {
+                    String hexColor = picture.getPicColor();
+                    if (StrUtil.isBlank(hexColor)) {
+                        return Double.MAX_VALUE;
+                    }
+                    Color pictureColor = Color.decode(hexColor);
+                    double v = ColorSimilarUtils.calculateSimilarity(pictureColor, targetColor);
+                    return -v;
+                }))
+                .limit(12)
+                .map(PictureVO::objToVo)
+                .toList();
     }
 
 
