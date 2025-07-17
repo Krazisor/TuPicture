@@ -20,8 +20,8 @@ spring:
     store-type: redis
     timeout: 259200
   #   单元测试专用
-#  profiles:
-#    active: local
+  profiles:
+    active: local
   # Redis 配置
   redis:
     database: 0

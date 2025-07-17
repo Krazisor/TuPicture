@@ -2,6 +2,7 @@ package com.thr.picturebackend.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thr.picturebackend.api.aliyunai.model.CreateOutPaintingTaskResponse;
 import com.thr.picturebackend.model.dto.picture.*;
 import com.thr.picturebackend.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -60,4 +61,10 @@ public interface PictureService extends IService<Picture> {
     void editPicture (PictureEditRequest pictureEditRequest, User loginUser);
 
     List<PictureVO> searchPictureByColor (Long spaceId, String picColor, User loginUser);
+
+    void editPictureByBatch (PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
+    void fillPictureWithNameRule(List<Picture> pictureList, String nameRule);
+
+    CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
 }

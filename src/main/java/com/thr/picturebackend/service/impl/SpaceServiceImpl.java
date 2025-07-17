@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -156,6 +159,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         return queryWrapper;
     }
 
+    private final ConcurrentHashMap<Long, Lock> userLockMap = new ConcurrentHashMap<>();
+
     @Override
     public long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) {
         Space space = new Space();
@@ -174,8 +179,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                 !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "无权限创建指定级别的管理员");
         }
-        String lock = String.valueOf(userId).intern();
-        synchronized (lock) {
+        Lock lock = userLockMap.computeIfAbsent(userId, k -> new ReentrantLock());
+        lock.lock();
+        try {
             Long newSpaceId = transactionTemplate.execute(status -> {
                 boolean existed = this.lambdaQuery()
                         .eq(Space::getUserId, userId)
@@ -186,6 +192,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                 return space.getId();
             });
             return Optional.ofNullable(newSpaceId).orElse(-1L);
+        } finally {
+            lock.unlock();
         }
     }
 
