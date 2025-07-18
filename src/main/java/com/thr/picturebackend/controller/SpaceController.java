@@ -45,24 +45,24 @@ public class SpaceController {
         return ResultUtils.success(newSpaceId);
     }
 
-//    @PostMapping("/delete")
-//    public BaseResponse<Boolean> deleteSpace(@RequestBody DeleteRequest deleteRequest
-//            , HttpServletRequest request) {
-//        if (deleteRequest == null || deleteRequest.getId() <= 0) {
-//            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-//        }
-//        User loginUser = userService.getLoginUser(request);
-//        Long id = deleteRequest.getId();
-//        // 判断是否存在
-//        Space oldSpace = spaceService.getById(id);
-//        ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
-//        // 仅本人或者管理员可删除
-//        spaceService.checkSpaceAuth(loginUser, oldSpace);
-//        // 操作数据库
-//        boolean result = spaceService.removeById(id);
-//        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-//        return ResultUtils.success(true);
-//    }
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deleteSpace(@RequestBody DeleteRequest deleteRequest
+            , HttpServletRequest request) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        Long id = deleteRequest.getId();
+        // 判断是否存在
+        Space oldSpace = spaceService.getById(id);
+        ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
+        // 仅本人或者管理员可删除
+        spaceService.checkSpaceAuth(loginUser, oldSpace);
+        // 操作数据库
+        boolean result = spaceService.removeById(id);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
+    }
 
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -172,7 +172,7 @@ public class SpaceController {
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         // 仅本人或管理员可编辑
-//        spaceService.checkSpaceAuth(loginUser, oldSpace);
+        spaceService.checkSpaceAuth(loginUser, oldSpace);
         // 操作数据库
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

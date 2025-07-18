@@ -21,8 +21,6 @@ import com.thr.picturebackend.mapper.SpaceMapper;
 import com.thr.picturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
@@ -194,6 +192,13 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             return Optional.ofNullable(newSpaceId).orElse(-1L);
         } finally {
             lock.unlock();
+        }
+    }
+
+    @Override
+    public void checkSpaceAuth(User loginUser, Space space) {
+        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "当前space无权限访问");
         }
     }
 
