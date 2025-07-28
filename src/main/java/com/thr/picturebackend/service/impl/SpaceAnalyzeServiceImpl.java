@@ -18,6 +18,8 @@ import com.thr.picturebackend.service.PictureService;
 import com.thr.picturebackend.service.SpaceAnalyzeService;
 import com.thr.picturebackend.service.SpaceService;
 import com.thr.picturebackend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.LinkedHashMap;
@@ -25,6 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
+@Service
+@Slf4j
 public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space>
         implements SpaceAnalyzeService {
 
